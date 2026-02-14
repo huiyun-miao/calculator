@@ -1,4 +1,18 @@
-//TO-DO: round the result
+let currentValue = null;
+let previousValue = null;
+let selectedOperator = null;
+let evaluateResult = false;
+
+const display = document.querySelector("#display");
+
+const numberBtns = Array.from(document.querySelectorAll("button")).filter((b) =>
+  Number.isInteger(Number(b.id)),
+);
+
+const operatorBtns = Array.from(document.querySelectorAll("button")).filter(
+  (b) => !Number.isInteger(Number(b.id)),
+);
+
 function add(a, b) {
   return a + b;
 }
@@ -17,58 +31,60 @@ function divide(a, b) {
 
 function operate(num1, num2, operator) {
   switch (operator) {
-    case "+":
-      add(num1, num2);
-    case "−":
-      subtract(num1, num2);
-    case "×":
-      multiply(num1, num2);
-    case "÷":
-      divide(num1, num2);
+    case "add":
+      return add(num1, num2);
+    case "subtract":
+      return subtract(num1, num2);
+    case "multiply":
+      return multiply(num1, num2);
+    case "divide":
+      return divide(num1, num2);
   }
 }
 
-let num1, num2, operator;
-const display = document.querySelector("#display");
+function handleNumberPress(btn) {
+  const input = Number(btn.id);
+  if (currentValue === null) {
+    currentValue = input;
+  } else {
+    currentValue = currentValue * 10 + input;
+  }
+  updateDisplay();
+}
 
-const numberBtns = Array.from(document.querySelectorAll("button")).filter((b) =>
-  Number.isInteger(Number(b.id)),
-);
+function handleOperatorPress(btn) {
+  if (selectedOperator !== null) {
+    evaluateResult = true;
+    updateDisplay();
+    evaluateResult = false;
+  } else {
+    previousValue = currentValue;
+    currentValue = null;
+  }
+  selectedOperator = btn.id;
+}
 
-const operatorBtns = Array.from(document.querySelectorAll("button")).filter(
-  (b) => !Number.isInteger(Number(b.id)),
-);
-
-const addBtn = document.querySelector("#add");
-const subtractBtn = document.querySelector("#subtract");
-const multiplyBtn = document.querySelector("#multiply");
-const divideBtn = document.querySelector("#divide");
-const equalBtn = document.querySelector("#equal");
+// TODO: the logic for updating display and handling evaluation needs to be updated
+function updateDisplay() {
+  if (evaluateResult) {
+    previousValue = operate(previousValue, currentValue, selectedOperator);
+    currentValue = null;
+    display.value = previousValue;
+  } else {
+    if (currentValue !== null) {
+      display.value = currentValue;
+    } else if (previousValue === null && currentValue === null) {
+      display.value = "";
+    } else {
+      display.value = previousValue;
+    }
+  }
+}
 
 numberBtns.forEach((b) => {
-  b.addEventListener("click", () => {
-    if (operator === undefined) {
-      num1 = updateInput(num1, Number(b.id));
-      display.value = num1;
-    } else {
-      num2 = updateInput(num2, Number(b.id));
-      display.value = `${num1}${operator}${num2}`;
-    }
-  });
+  b.addEventListener("click", () => handleNumberPress(b));
 });
 
-addBtn.addEventListener("click", () => {
-  if (!operator) {
-    operator = "+";
-    display.value += operator;
-  } else {
-    display.value = `${add(num1, num2)}+`;
-    num1 = add(num1, num2);
-    num2 = undefined;
-  }
+operatorBtns.forEach((b) => {
+  b.addEventListener("click", () => handleOperatorPress(b));
 });
-
-function updateInput(number, input) {
-  if (number === undefined) return input;
-  return number * 10 + input;
-}
