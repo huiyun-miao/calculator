@@ -2,6 +2,7 @@ let firstOperand = null;
 let secondOperand = null;
 let operator = null;
 let error = false;
+let justEvaluated = false;
 
 const display = document.querySelector("#display");
 
@@ -72,6 +73,11 @@ function updateNumber(operand, btn) {
 
 function handleNumberPress(btn) {
   if (error) return;
+  if (justEvaluated) {
+    clear();
+    justEvaluated = false;
+  }
+
   if (operator === null) {
     firstOperand = updateNumber(firstOperand, btn);
   } else {
@@ -87,6 +93,7 @@ function handleOperatorPress(btn) {
     operator = btn.id;
     return;
   }
+
   if (firstOperand !== null && operator !== null && secondOperand !== null) {
     const result = evaluate(firstOperand, secondOperand, operator);
     if (result === null) {
@@ -96,8 +103,14 @@ function handleOperatorPress(btn) {
       operator = btn.id;
       secondOperand = null;
     }
+    //When different operators are pressed continuously, use the last one
+  } else if (
+    firstOperand !== null &&
+    operator !== null &&
+    secondOperand === null
+  ) {
+    operator = btn.id;
   } else {
-    //How about when operators are pressed twice
     error = true;
   }
   updateDisplay();
@@ -113,6 +126,7 @@ function handleEqualBtnPress() {
       firstOperand = result;
       operator = null;
       secondOperand = null;
+      justEvaluated = true;
     }
   } else {
     error = true;
