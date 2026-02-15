@@ -1,9 +1,7 @@
-let currentValue = null;
-let previousValue = null;
-let selectedOperator = null;
-let evaluateResult = false;
-let equalPressed = false;
-const SYNTAX_ERROR_MESSAGE = "SYNTAX ERROR, please press C";
+let firstOperand = null;
+let secondOperand = null;
+let operator = null;
+let error = false;
 
 const display = document.querySelector("#display");
 
@@ -23,8 +21,7 @@ const equalBtn = document.querySelector("#equal");
 const clearBtn = document.querySelector("#clear");
 
 function clear() {
-  currentValue = previousValue = selectedOperator = null;
-  evaluateResult = equalPressed = false;
+  firstOperand = secondOperand = operator = null;
 }
 
 function add(a, b) {
@@ -40,13 +37,18 @@ function multiply(a, b) {
 }
 
 function divide(a, b) {
-  if (b === 0) {
-    return SYNTAX_ERROR_MESSAGE;
-  }
   return a / b;
 }
 
-function operate(num1, num2, operator) {
+function evaluate(num1, num2, operator) {
+  if (
+    num1 === null ||
+    num2 === null ||
+    operator === null ||
+    (num2 === 0 && operator === "divide")
+  ) {
+    return null;
+  }
   switch (operator) {
     case "add":
       return add(num1, num2);
@@ -59,68 +61,74 @@ function operate(num1, num2, operator) {
   }
 }
 
-function handleNumberPress(btn) {
-  if (display.value === SYNTAX_ERROR_MESSAGE) return;
-  if (equalPressed) {
-    clear();
-  }
+function updateNumber(operand, btn) {
   const input = Number(btn.id);
-  if (currentValue === null) {
-    currentValue = input;
+  if (operand === null) {
+    return input;
   } else {
-    currentValue = currentValue * 10 + input;
+    return operand * 10 + input;
   }
-  display.value = updateDisplay();
+}
+
+function handleNumberPress(btn) {
+  if (error) return;
+  if (operator === null) {
+    firstOperand = updateNumber(firstOperand, btn);
+  } else {
+    secondOperand = updateNumber(secondOperand, btn);
+  }
+  updateDisplay();
 }
 
 function handleOperatorPress(btn) {
-  // if (btn.id === "equal") {
-  //   evaluateResult = true;
-  //   display.value = updateDisplay();
-  //   selectedOperator = btn.id;
-  //   return;
-  // }
-
-  if (display.value === SYNTAX_ERROR_MESSAGE) return;
-
-  //No operator is selected, update operator
-  if (selectedOperator === null) {
-    previousValue = currentValue;
-    currentValue = null;
-    selectedOperator = btn.id;
+  if (error) return;
+  if (firstOperand === null) return;
+  if (firstOperand !== null && operator === null) {
+    operator = btn.id;
     return;
   }
-
-  //Result from previous numbers and operator need to be evaluated
-  if (selectedOperator !== null && currentValue !== null) {
-    evaluateResult = true;
-    display.value = updateDisplay();
-    //If there is syntax error in the evaluation, clear the result, return without updating the operator
-    if (display.value === "SYNTAX ERROR") {
-      return;
+  if (firstOperand !== null && operator !== null && secondOperand !== null) {
+    const result = evaluate(firstOperand, secondOperand, operator);
+    if (result === null) {
+      error = true;
+    } else {
+      firstOperand = result;
+      operator = btn.id;
+      secondOperand = null;
     }
+  } else {
+    //How about when operators are pressed twice
+    error = true;
   }
-
-  //Update selectedOperator with the selected button
-  selectedOperator = btn.id;
+  updateDisplay();
 }
 
-// TODO: the logic for updating display and handling evaluation needs to be updated
-function updateDisplay() {
-  if (evaluateResult) {
-    //currentValue and previousValue are not null
-    previousValue = operate(previousValue, currentValue, selectedOperator);
-    currentValue = null;
-    evaluateResult = false;
-    return previousValue;
-  } else {
-    if (currentValue !== null) {
-      return currentValue;
-    } else if (previousValue === null && currentValue === null) {
-      return "";
+function handleEqualBtnPress() {
+  if (error) return;
+  if (firstOperand !== null && operator !== null && secondOperand !== null) {
+    const result = evaluate(firstOperand, secondOperand, operator);
+    if (result === null) {
+      error = true;
     } else {
-      return previousValue;
+      firstOperand = result;
+      operator = null;
+      secondOperand = null;
     }
+  } else {
+    error = true;
+  }
+  updateDisplay();
+}
+
+function updateDisplay() {
+  if (error) {
+    display.value = "ERROR";
+  } else if (secondOperand !== null) {
+    display.value = secondOperand;
+  } else if (firstOperand !== null) {
+    display.value = firstOperand;
+  } else {
+    display.value = "";
   }
 }
 
@@ -133,6 +141,9 @@ operatorBtns.forEach((b) => {
 });
 
 clearBtn.addEventListener("click", () => {
+  error = false;
   clear();
-  display.value = "";
+  updateDisplay();
 });
+
+equalBtn.addEventListener("click", handleEqualBtnPress);
