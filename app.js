@@ -65,6 +65,7 @@ function handleNumberPress(btn) {
 }
 
 function handleOperatorPress(btn) {
+  if (justEvaluated) justEvaluated = false;
   if (error) return;
   if (firstOperand === null) return;
   if (firstOperand !== null && operator === null) {
@@ -96,6 +97,7 @@ function handleOperatorPress(btn) {
 
 function handleEqualBtnPress() {
   if (error) return;
+  if (operator === null) return;
   if (firstOperand !== null && operator !== null && secondOperand !== null) {
     const result = evaluate(firstOperand, secondOperand, operator);
     if (result === null) {
