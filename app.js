@@ -25,41 +25,19 @@ function clear() {
   firstOperand = secondOperand = operator = null;
 }
 
-function add(a, b) {
-  return a + b;
-}
+const operations = {
+  add: (a, b) => a + b,
+  subtract: (a, b) => a - b,
+  multiply: (a, b) => a * b,
+  divide: (a, b) => a / b,
+};
 
-function subtract(a, b) {
-  return a - b;
-}
+function evaluate(a, b, operator) {
+  if (a === null || b === null || operator === null) return null;
+  if (b === 0 && operator === "divide") return null;
+  if (!operations[operator]) return null;
 
-function multiply(a, b) {
-  return a * b;
-}
-
-function divide(a, b) {
-  return a / b;
-}
-
-function evaluate(num1, num2, operator) {
-  if (
-    num1 === null ||
-    num2 === null ||
-    operator === null ||
-    (num2 === 0 && operator === "divide")
-  ) {
-    return null;
-  }
-  switch (operator) {
-    case "add":
-      return add(num1, num2);
-    case "subtract":
-      return subtract(num1, num2);
-    case "multiply":
-      return multiply(num1, num2);
-    case "divide":
-      return divide(num1, num2);
-  }
+  return operations[operator](a, b);
 }
 
 function updateNumber(operand, btn) {
