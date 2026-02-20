@@ -37,7 +37,13 @@ function evaluate(a, b, operator) {
   if (b === 0 && operator === "divide") return null;
   if (!operations[operator]) return null;
 
-  return operations[operator](a, b);
+  let result = operations[operator](a, b);
+  let decimals = result.toString().split(".")[1];
+  if (decimals && decimals.length > 8) {
+    return parseFloat(result.toFixed(8));
+  }
+
+  return result;
 }
 
 function updateNumber(operand, btn) {
